@@ -29,8 +29,17 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=http://localhost:9080
+      # Optimisations pour Portainer
+      shm_size: '1gb'
+      memswap_limit: '2gb'
+      mem_limit: '1gb'
     container_name: styleguard-front
     restart: unless-stopped
+    # Utilisateur node pour éviter les problèmes de permissions
+    user: node
+    # Volumes pour le cache npm
+    volumes:
+      - npm-cache:/home/node/.npm
     ports:
       - "${FRONTEND_PORT:-9081}:80"
     depends_on:
@@ -46,4 +55,5 @@ networks:
     name: styleguard-network
 
 volumes:
-  db-data: 
+  db-data:
+  npm-cache: 
