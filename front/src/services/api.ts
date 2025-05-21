@@ -15,12 +15,12 @@ export interface ApiErrorResponse {
  * Base API configuration for StyleGuard
  */
 export const api = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:9080",
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true,
-  timeout: 15000, // 15 seconds timeout
+  timeout: 60000, // 60 seconds timeout for Ollama processing
 });
 
 /**
@@ -120,7 +120,7 @@ export interface CorrectionResponse {
  * @param error - Axios error object
  * @returns API error response with key and Ollama flag
  */
-const extractApiError = (error: unknown): ApiErrorResponse => {
+export const extractApiError = (error: unknown): ApiErrorResponse => {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError;
     
