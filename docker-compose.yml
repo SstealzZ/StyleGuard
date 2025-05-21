@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     build:
@@ -9,15 +7,16 @@ services:
     restart: unless-stopped
     environment:
       - DATABASE_URL=sqlite:///./styleguard.db
-      - SECRET_KEY=${SECRET_KEY}
-      - ALGORITHM=${ALGORITHM}
-      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-please-change-in-production}
+      - ALGORITHM=${ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - OLLAMA_API_URL=http://192.168.1.73:11434/api/generate
-      - MODEL_NAME=${MODEL_NAME}
+      - MODEL_NAME=${MODEL_NAME:-gemma3:1b}
     volumes:
-      - ./api/styleguard.db:/app/styleguard.db
+      - db-data:/app
     ports:
       - "${API_PORT:-9080}:8000"
+    command: bash -c "python create_tables_async.py && uvicorn main:app --host 0.0.0.0 --port 8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 30s
@@ -28,6 +27,8 @@ services:
     build:
       context: ./front
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:9080
     container_name: styleguard-front
     restart: unless-stopped
     ports:
@@ -42,4 +43,7 @@ services:
 
 networks:
   default:
-    name: styleguard-network 
+    name: styleguard-network
+
+volumes:
+  db-data: 
