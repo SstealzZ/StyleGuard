@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from sqlalchemy.exc import IntegrityError
 from routes import corrections
 from routes.auth import router as auth_router
 
@@ -16,15 +19,57 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS
+# Configure CORS with specific origins
+origins = [
+    "http://localhost:9081",    # Docker frontend
+    "http://localhost:5173",    # Dev frontend
+    "http://localhost:8000",    # API itself
+    "http://localhost:9080",    # Docker API
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+# Exception handlers
+@app.exception_handler(IntegrityError)
+async def integrity_exception_handler(request: Request, exc: IntegrityError):
+    """
+    Handle database integrity errors (like duplicate emails)
+    
+    Args:
+        request: The request that caused the exception
+        exc: The exception raised
+        
+    Returns:
+        JSONResponse: A formatted error response
+    """
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": "Database integrity error. This item may already exist."},
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Handle request validation errors for better error messages
+    
+    Args:
+        request: The request that caused the exception
+        exc: The validation exception
+        
+    Returns:
+        JSONResponse: A formatted error response
+    """
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": f"Validation error: {str(exc)}"},
+    )
 
 # Include all routes
 app.include_router(auth_router)
