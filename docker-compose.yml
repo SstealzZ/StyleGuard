@@ -34,8 +34,6 @@ services:
     # Optimisations pour Portainer
     shm_size: '1gb'
     mem_limit: '1gb'
-    # Utilisateur node pour éviter les problèmes de permissions
-    user: node
     # Volumes pour le cache npm
     volumes:
       - npm-cache:/home/node/.npm
