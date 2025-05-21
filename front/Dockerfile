@@ -12,8 +12,10 @@ COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=${VITE_API_URL:-http://localhost:9080}
 
-# Contourner TypeScript et exécuter directement Vite
-RUN npx vite build
+# Utiliser le script de build du package.json et ajouter des logs
+RUN echo "Node version: $(node -v)" && \
+    echo "NPM version: $(npm -v)" && \
+    NODE_ENV=production npm run build || { echo "Build failed"; exit 1; }
 
 # Production image
 FROM nginx:alpine
