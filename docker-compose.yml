@@ -12,14 +12,12 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
-      - OLLAMA_API_URL=${OLLAMA_API_URL}
+      - OLLAMA_API_URL=http://192.168.1.73:11434/api/generate
       - MODEL_NAME=${MODEL_NAME}
     volumes:
       - ./api/styleguard.db:/app/styleguard.db
     ports:
-      - "8000:8000"
-    depends_on:
-      - ollama
+      - "${API_PORT:-9080}:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 30s
@@ -33,7 +31,7 @@ services:
     container_name: styleguard-front
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "${FRONTEND_PORT:-9081}:80"
     depends_on:
       - api
     healthcheck:
@@ -42,30 +40,6 @@ services:
       timeout: 10s
       retries: 3
 
-  ollama:
-    image: ollama/ollama:latest
-    container_name: styleguard-ollama
-    restart: unless-stopped
-    volumes:
-      - ollama_data:/root/.ollama
-    ports:
-      - "11434:11434"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
 networks:
   default:
-    name: styleguard-network
-
-volumes:
-  ollama_data: 
+    name: styleguard-network 
