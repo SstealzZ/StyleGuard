@@ -1,14 +1,17 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuthStore } from "@/stores/auth"
+import { extractApiError } from "@/services/api"
 
 /**
  * Registration form component for new users
  */
 export function RegisterForm() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const register = useAuthStore((state) => state.register)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -28,7 +31,7 @@ export function RegisterForm() {
     const confirmPassword = formData.get("confirmPassword") as string
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
+      setError(t("passwordsDoNotMatch"))
       setIsLoading(false)
       return
     }
@@ -37,20 +40,21 @@ export function RegisterForm() {
       await register(email, username, password)
       navigate("/")
     } catch (error: any) {
-      setError(error.response?.data?.detail || "Registration failed")
+      const apiError = extractApiError(error)
+      setError(t(apiError.key) || t("registrationFailed"))
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm mx-auto">
       <div className="space-y-2">
         <Input
           id="email"
           name="email"
           type="email"
-          placeholder="Email"
+          placeholder={t("email")}
           required
           disabled={isLoading}
         />
@@ -60,7 +64,7 @@ export function RegisterForm() {
           id="username"
           name="username"
           type="text"
-          placeholder="Username"
+          placeholder={t("username")}
           required
           disabled={isLoading}
         />
@@ -70,7 +74,7 @@ export function RegisterForm() {
           id="password"
           name="password"
           type="password"
-          placeholder="Password"
+          placeholder={t("password")}
           required
           disabled={isLoading}
         />
@@ -80,7 +84,7 @@ export function RegisterForm() {
           id="confirmPassword"
           name="confirmPassword"
           type="password"
-          placeholder="Confirm Password"
+          placeholder={t("confirmPassword")}
           required
           disabled={isLoading}
         />
@@ -93,7 +97,7 @@ export function RegisterForm() {
         className="w-full"
         disabled={isLoading}
       >
-        {isLoading ? "Creating account..." : "Register"}
+        {isLoading ? t("creatingAccount") : t("signUp")}
       </Button>
     </form>
   )
