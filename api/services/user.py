@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from fastapi import HTTPException, status
 from models import User
 from schemas.user import UserCreate, UserUpdate
 from utils.password import get_password_hash, verify_password
@@ -68,16 +69,35 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
         
     Returns:
         User: The created user object
+        
+    Raises:
+        HTTPException: If a user with the same email already exists
     """
+    # Check if user with this email already exists
+    existing_user = await get_user_by_email(db, user.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+        
     db_user = User(
         email=user.email,
         username=user.username,
         hashed_password=get_password_hash(user.password)
     )
-    db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
-    return db_user
+    
+    try:
+        db.add(db_user)
+        await db.commit()
+        await db.refresh(db_user)
+        return db_user
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error creating user"
+        ) from e
 
 async def update_user(db: AsyncSession, user_id: int, user_update: UserUpdate) -> User:
     """
