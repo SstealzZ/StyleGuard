@@ -14,20 +14,11 @@ export default defineConfig({
     }
   },
   build: {
-    // Optimisations pour environnements restreints
-    minify: 'terser',
+    // Utiliser esbuild par défaut au lieu de terser
+    minify: 'esbuild',
     sourcemap: false,
     // Augmenter la verbosité pour le débogage
     reportCompressedSize: true,
-    chunkSizeWarningLimit: 1000,
-    // Paramètres Terser pour économiser la mémoire
-    terserOptions: {
-      compress: {
-        // Désactiver certaines optimisations coûteuses en mémoire
-        passes: 1,
-        drop_console: false,
-        sequences: false
-      }
-    }
+    chunkSizeWarningLimit: 1000
   }
 })
