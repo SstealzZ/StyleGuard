@@ -12,5 +12,22 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src')
     }
+  },
+  build: {
+    // Optimisations pour environnements restreints
+    minify: 'terser',
+    sourcemap: false,
+    // Augmenter la verbosité pour le débogage
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 1000,
+    // Paramètres Terser pour économiser la mémoire
+    terserOptions: {
+      compress: {
+        // Désactiver certaines optimisations coûteuses en mémoire
+        passes: 1,
+        drop_console: false,
+        sequences: false
+      }
+    }
   }
 })
