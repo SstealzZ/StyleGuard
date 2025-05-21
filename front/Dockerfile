@@ -1,27 +1,40 @@
-FROM node:20-alpine AS build
+FROM node:18-alpine as build
 
 WORKDIR /app
 
-# Installer les dépendances
-COPY package.json package-lock.json ./
-RUN npm ci --prefer-offline --no-audit --progress=false
+# Récupération des arguments de construction
+ARG VITE_API_URL
 
-# Installer terser explicitement (nécessaire pour la minification)
-RUN npm install terser --no-save
+# Définition des variables d'environnement
+ENV VITE_API_URL=${VITE_API_URL:-http://localhost:9080}
+ENV NODE_ENV=production
 
-# Copier les sources
+# Copie des fichiers de dépendances
+COPY package*.json ./
+
+# Installation des dépendances (incluant les devDependencies nécessaires pour le build)
+RUN npm install --include=dev
+
+# Copie des fichiers de configuration avant le code source
+COPY vite.config.ts tsconfig*.json ./
+
+# Copie du code source
 COPY . .
 
-# Configurer l'API URL
-ARG VITE_API_URL
-ENV VITE_API_URL=${VITE_API_URL:-http://localhost:9080}
+# Construction de l'application
+RUN npm run build
 
-# Build direct sans TypeScript check et avec une seule commande simple
-RUN npx vite build --mode production
-
-# Production image
+# Étape 2: Servir l'application avec Nginx
 FROM nginx:alpine
+
+# Copie des fichiers de build depuis l'étape de build
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copie de la configuration nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Exposition du port
 EXPOSE 80
+
+# Démarrage de Nginx
 CMD ["nginx", "-g", "daemon off;"] 
