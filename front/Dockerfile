@@ -1,26 +1,42 @@
 FROM node:20-alpine AS build
 
-WORKDIR /app
+# Utiliser un utilisateur non-root pour éviter les problèmes de permissions
+USER node
+WORKDIR /home/node/app
 
-COPY package*.json ./
+# Configurer npm pour utiliser moins de mémoire
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 
-RUN npm ci
+# Copier les fichiers package.json en tant qu'utilisateur node
+COPY --chown=node:node package*.json ./
 
-COPY . .
+# Créer et utiliser un volume pour le cache npm
+RUN mkdir -p /home/node/.npm
+ENV NPM_CONFIG_CACHE=/home/node/.npm
+
+# Installer les dépendances
+RUN npm ci --quiet
+
+# Copier les sources avec les bonnes permissions
+COPY --chown=node:node . .
 
 # Ensure environment variables are available during build
 ARG VITE_API_URL
 ENV VITE_API_URL=${VITE_API_URL:-http://localhost:9080}
 
-# Utiliser le script de build du package.json et ajouter des logs
+# Supprimer tsconfig.node.json pour éviter les problèmes de référence
+RUN cp tsconfig.json tsconfig.backup.json && \
+    echo '{ "compilerOptions": { "target": "ES2020", "useDefineForClassFields": true, "lib": ["ES2020", "DOM", "DOM.Iterable"], "module": "ESNext", "skipLibCheck": true, "moduleResolution": "bundler", "allowImportingTsExtensions": true, "resolveJsonModule": true, "isolatedModules": true, "noEmit": true, "jsx": "react-jsx", "strict": true, "baseUrl": ".", "paths": { "@/*": ["src/*"] } }, "include": ["src"] }' > tsconfig.json
+
+# Construire l'application avec journalisation détaillée
 RUN echo "Node version: $(node -v)" && \
     echo "NPM version: $(npm -v)" && \
-    NODE_ENV=production npm run build || { echo "Build failed"; exit 1; }
+    VITE_LOG_LEVEL=info npm run build || { echo "Build failed with exit code $?"; exit 1; }
 
 # Production image
 FROM nginx:alpine
 
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /home/node/app/dist /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
