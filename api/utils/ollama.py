@@ -98,7 +98,7 @@ async def correct_text(text: str) -> str:
 ## RÉPONSE (texte corrigé uniquement):"""
 
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
                 settings.ollama_api_url,
                 json={
