@@ -60,6 +60,16 @@ Par défaut, avec les ports personnalisés:
 
 Vous pouvez modifier les ports du frontend et de l'API dans le fichier `.env` selon vos besoins.
 
+## Configuration des timeouts
+
+Les requêtes vers le modèle Ollama peuvent prendre du temps selon la taille du texte à traiter:
+- Le timeout côté frontend est configuré à 60 secondes
+- Le timeout côté backend est également configuré à 60 secondes
+
+Ces valeurs peuvent être ajustées dans les fichiers suivants:
+- Frontend: `front/src/services/api.ts`
+- Backend: `api/utils/ollama.py`
+
 ## Gestion des conteneurs
 
 Voir les logs:
