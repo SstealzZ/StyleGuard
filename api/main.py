@@ -20,30 +20,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Get URLs from environment variables
-api_url = os.getenv('VITE_API_URL', 'http://localhost:9080')
-frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:9081')
-
-# Configure CORS with specific origins
-origins = [
-    "http://localhost:9081",           # Docker frontend
-    "http://localhost:5173",           # Dev frontend
-    "http://localhost:8000",           # API itself
-    "http://localhost:9080",           # Docker API
-    "http://192.168.1.73:9080",        # External API URL
-    "http://192.168.1.73:9081",        # External Frontend URL
-    "http://192.168.1.73",             # Base domain
-    frontend_url,                      # From environment
-]
-
+# Configuration CORS simple
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=86400,  # Cache preflight requests for 24 hours
 )
 
 # Exception handlers
