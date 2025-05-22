@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_session
@@ -19,8 +19,28 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 settings = get_settings()
 
+@router.options("/register", status_code=200)
+async def options_register(request: Request, response: Response):
+    """
+    Gère les requêtes OPTIONS pour le endpoint register
+    
+    Args:
+        request: La requête
+        response: La réponse
+        
+    Returns:
+        dict: Une réponse vide
+    """
+    response.headers["Access-Control-Allow-Origin"] = "http://192.168.1.73:9081"
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    return {}
+
 @router.post("/register", response_model=UserResponse)
 async def register(
+    request: Request,
+    response: Response,
     user_data: UserCreate,
     db: AsyncSession = Depends(get_session)
 ) -> User:
@@ -37,6 +57,8 @@ async def register(
     Raises:
         HTTPException: If registration fails
     """
+    response.headers["Access-Control-Allow-Origin"] = "http://192.168.1.73:9081"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
     return await create_user(db, user_data)
 
 @router.post("/token")
