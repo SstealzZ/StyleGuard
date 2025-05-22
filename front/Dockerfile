@@ -35,17 +35,10 @@ ENV FRONTEND_URL=${FRONTEND_URL:-http://192.168.1.73:9081}
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copie de la configuration nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf.template
-
-# Script pour remplacer les variables dans la configuration Nginx
-RUN echo '#!/bin/sh \n\
-envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf \n\
-exec "$@"' > /docker-entrypoint.sh \
-&& chmod +x /docker-entrypoint.sh
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Exposition du port
 EXPOSE 80
 
-# Démarrage de Nginx avec substitution de variables
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# Démarrage de Nginx
 CMD ["nginx", "-g", "daemon off;"] 
