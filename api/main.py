@@ -25,6 +25,8 @@ origins = [
     "http://localhost:5173",    # Dev frontend
     "http://localhost:8000",    # API itself
     "http://localhost:9080",    # Docker API
+    "http://192.168.1.73:9080", # External IP API
+    "http://192.168.1.73:9081", # External IP frontend
 ]
 
 app.add_middleware(
