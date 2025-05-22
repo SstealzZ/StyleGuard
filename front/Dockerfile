@@ -27,14 +27,25 @@ RUN npm run build
 # Étape 2: Servir l'application avec Nginx
 FROM nginx:alpine
 
+# Arguments pour la configuration dynamique
+ARG FRONTEND_URL
+ENV FRONTEND_URL=${FRONTEND_URL:-http://192.168.1.73:9081}
+
 # Copie des fichiers de build depuis l'étape de build
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copie de la configuration nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
+
+# Script pour remplacer les variables dans la configuration Nginx
+RUN echo '#!/bin/sh \n\
+envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf \n\
+exec "$@"' > /docker-entrypoint.sh \
+&& chmod +x /docker-entrypoint.sh
 
 # Exposition du port
 EXPOSE 80
 
-# Démarrage de Nginx
+# Démarrage de Nginx avec substitution de variables
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"] 
