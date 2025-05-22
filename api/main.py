@@ -26,12 +26,14 @@ frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:9081')
 
 # Configure CORS with specific origins
 origins = [
-    "http://localhost:9081",    # Docker frontend
-    "http://localhost:5173",    # Dev frontend
-    "http://localhost:8000",    # API itself
-    "http://localhost:9080",    # Docker API
-    api_url,                    # External API URL
-    frontend_url,               # External Frontend URL
+    "http://localhost:9081",           # Docker frontend
+    "http://localhost:5173",           # Dev frontend
+    "http://localhost:8000",           # API itself
+    "http://localhost:9080",           # Docker API
+    "http://192.168.1.73:9080",        # External API URL
+    "http://192.168.1.73:9081",        # External Frontend URL
+    "http://192.168.1.73",             # Base domain
+    frontend_url,                      # From environment
 ]
 
 app.add_middleware(
