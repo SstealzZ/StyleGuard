@@ -15,7 +15,7 @@ export interface ApiErrorResponse {
  * Base API configuration for StyleGuard
  */
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:9080",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
