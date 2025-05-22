@@ -28,7 +28,7 @@ services:
       context: ./front
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://localhost:9080
+        - VITE_API_URL=${VITE_API_URL:-http://192.168.1.73:9080}
     container_name: styleguard-front
     restart: unless-stopped
     # Optimisations pour Portainer
