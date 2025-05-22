@@ -15,7 +15,7 @@ export interface ApiErrorResponse {
  * Base API configuration for StyleGuard
  */
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: '/api',  // Utilise un chemin relatif qui sera géré par le proxy Nginx
   headers: {
     'Content-Type': 'application/json',
   },
