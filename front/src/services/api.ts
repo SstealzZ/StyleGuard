@@ -19,7 +19,7 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: false,  // Désactivé temporairement pour déboguer CORS
   timeout: 60000, // 60 seconds timeout for Ollama processing
 });
 
